@@ -1,0 +1,22 @@
+install mo muna 
+Python 3.10.11 (Windows x86-64 executable installer)
+
+git clone <github link>
+
+cd backend 
+create kau venv
+py -3.10 -m venv venv310
+
+source venv310/Scripts/Activate
+
+pip install -r requirements.txt
+
+to run:
+python server.py
+
+
+
+kahit anong python na, di naman na tau naka GUI
+
+cd
+npm install
