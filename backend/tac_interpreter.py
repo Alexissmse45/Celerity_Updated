@@ -138,6 +138,7 @@ class TACInterpreter:
 
             if isinstance(ins, TACAssign):
                 if "[" in ins.result: self._astore(ins.result, self._ev(ins.operand,env), env)
+                elif "." in ins.result: self._dstore(ins.result, self._ev(ins.operand,env), env)
                 else: env[ins.result] = self._ev(ins.operand, env)
                 pc+=1; continue
 
@@ -282,6 +283,7 @@ class TACInterpreter:
         if c_type == "double":       return 0.0
         if c_type == "char":         return " "
         if c_type == "char*":        return ""
+        if "struct" in str(c_type):  return {}
         return 0
 
     def _astore(self, lhs, val, env):
@@ -301,6 +303,14 @@ class TACInterpreter:
             while len(obj[indices[0]])<=indices[1]: obj[indices[0]].append(0)
             obj[indices[0]][indices[1]] = val
         env[base] = obj   # <-- ADD THIS LINE if missing
+
+    def _dstore(self, lhs, val, env):
+        """Store value into struct field: p.x = 10"""
+        parts = lhs.split(".", 1)
+        obj = env.get(parts[0], {})
+        if not isinstance(obj, dict): obj = {}
+        obj[parts[1]] = val
+        env[parts[0]] = obj
 
     def _binop(self, op, l, r):
         try:

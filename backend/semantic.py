@@ -589,30 +589,15 @@ class Semantic:
                         return
 
                 elif token_type == "out":
-                    # out( expr + expr ... )
+                    # out( expr ) — delegate entirely to validate_expression()
+                    # which correctly handles: identifiers, struct fields (s.x),
+                    # arrays, function calls, string/arithmetic expressions.
                     self.index += 1  # past 'out'
-                    while token_type != ")":
-                        self.index += 1
-                        lexeme2, token_type, line2, column2 = self.tokens[self.index]
-                        if token_type == "identifier":
-                            if not self._resolve_identifier(lexeme2, line2, column2):
-                                pass
-                            else:
-                                symbol = self._lookup(lexeme2)
-                                if symbol and symbol.dimension > 0:
-                                    if self.tokens[self.index + 1][0] == "[":
-                                        self.index += 2
-                                        idx_type = self.validate_expression()
-                                        if idx_type != "num_literal":
-                                            self.errors.append(
-                                                f"⚠️ Semantic Error at (line {line2}, column {column2}): "
-                                                f"Array index must be an integer"
-                                            )
-                                    else:
-                                        self.errors.append(
-                                            f"⚠️ Semantic Error at (line {line2}, column {column2}): "
-                                            f"Array variable '{lexeme2}' must have index"
-                                        )
+                    self.index += 1  # past '('
+                    self.validate_expression(entered_param=True)
+                    # validate_expression breaks cleanly at ')'; consume it
+                    if self.index < len(self.tokens) and self.tokens[self.index][0] == ")":
+                        self.index += 1  # past ')'
 
                 elif token_type == "return":
                     self.index += 1
@@ -765,6 +750,7 @@ class Semantic:
 
         else:
             target_type = symbol.data_type
+            self.index += 1  # advance past identifier to reach '=' or operator
 
         # ---- assignment ----
         if symbol.symbol_type != "function":
@@ -875,6 +861,13 @@ class Semantic:
                 ("bool", "deci_literal"): "num_literal",
                 ("deci_literal", "bool"): "num_literal",
                 ("word_literal", "word_literal"): "word_literal",
+                ("word_literal", "num_literal"): "word_literal",
+                ("word_literal", "deci_literal"): "word_literal",
+                ("word_literal", "bool"): "word_literal",
+                ("num_literal", "word_literal"): "word_literal",
+                ("deci_literal", "word_literal"): "word_literal",
+                ("bool", "word_literal"): "word_literal",
+                ("word_literal", "user_input"): "word_literal",
                 ("user_input", "num_literal"): "num_literal",
                 ("num_literal", "user_input"): "num_literal",
                 ("user_input", "deci_literal"): "deci_literal",
@@ -1028,8 +1021,12 @@ class Semantic:
                                 return "error"
                             if self.index < len(self.tokens) and self.tokens[self.index][0] == "]":
                                 self.index += 1
-                        if symbol.data_type == "word":
+                        if symbol.data_type == "word" and symbol.dimension == 0:
+                            # Indexing a plain word variable (string) gives a character
                             operand_stack.append("single_literal")
+                        elif symbol.data_type == "word":
+                            # Indexing a word array gives a full word element
+                            operand_stack.append("word_literal")
                         else:
                             operand_stack.append(type_mapping.get(symbol.data_type, symbol.data_type))
                     else:
