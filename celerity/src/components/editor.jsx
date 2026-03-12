@@ -27,6 +27,10 @@ const Editor = ({ code, setCode, onRun, onStop, isRunning }) => {
     }
   };
   
+  // Escape special HTML characters so < > & are never parsed as tags
+  const escapeHtml = (text) =>
+    text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
   // Syntax highlighting
   const highlightCode = (text) => {
     const lines = text.split('\n');
@@ -66,7 +70,8 @@ const Editor = ({ code, setCode, onRun, onStop, isRunning }) => {
             const beforeText = line.substring(currentPos, i);
             parts.push(highlightNonString(beforeText, keywords, datatypes));
           }
-          parts.push(`<span style="color: #CE9178;">${stringAtPos.text}</span>`);
+          // Escape the string content too so quotes with < > inside don't break
+          parts.push(`<span style="color: #CE9178;">${escapeHtml(stringAtPos.text)}</span>`);
           i = stringAtPos.end - 1;
           currentPos = stringAtPos.end;
         }
@@ -96,7 +101,8 @@ const Editor = ({ code, setCode, onRun, onStop, isRunning }) => {
     let match;
     while ((match = combinedRegex.exec(text)) !== null) {
       if (match.index > currentPos) {
-        parts.push(text.substring(currentPos, match.index));
+        // Escape plain text so < > & are never interpreted as HTML
+        parts.push(escapeHtml(text.substring(currentPos, match.index)));
       }
       
       const word = match[0];
@@ -112,7 +118,8 @@ const Editor = ({ code, setCode, onRun, onStop, isRunning }) => {
     }
     
     if (currentPos < text.length) {
-      parts.push(text.substring(currentPos));
+      // Escape remaining plain text too
+      parts.push(escapeHtml(text.substring(currentPos)));
     }
     
     return parts.join('');

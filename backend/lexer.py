@@ -286,6 +286,7 @@ class Lexer:
                     elif char is not None and (char.isalpha() or char.isdigit() or char == '_'):
                         # Not 'bool', treat as identifier
                         state = 252
+                        
                         lexeme += char
                     else:# Invalid delimiter after 'b'
                         if char in self.delimiden:
