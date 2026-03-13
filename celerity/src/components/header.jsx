@@ -13,7 +13,7 @@ const Header = () => {
           Celerity 
         </h1> 
       </div> 
-      <div className="grid grid-cols-3 gap-x-12 gap-y-1"> 
+      <div className="hidden md:grid grid-cols-3 gap-x-12 gap-y-1"> 
         {['Amper',"Bernabe", 'Enriquez', 'Gorme', 'Habana', 'Reyes', 'Tolin', 'Valdez'].map((name, i) => ( 
           <span key={i} className="text-[#333] text-base text-left"> 
             {name} 
