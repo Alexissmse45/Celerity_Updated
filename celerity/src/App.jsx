@@ -4,6 +4,8 @@ import Editor from './components/editor';
 import SidePanel from './components/sidepanel';
 import Terminal from './components/terminal';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 function App() {
   const [code, setCode] = useState(`main(){\n  #Welcome To Celerity Compiler!\n} \n`);
   const [activeTab, setActiveTab]       = useState('terminal');
@@ -32,7 +34,7 @@ function App() {
     setProgramEvents([]);
 
     try {
-      const response = await fetch('http://localhost:5000/analyze', {
+      const response = await fetch(`${API_URL}/analyze`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, analysisType })
