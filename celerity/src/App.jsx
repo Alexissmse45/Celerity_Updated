@@ -4,7 +4,7 @@ import Editor from './components/editor';
 import SidePanel from './components/sidepanel';
 import Terminal from './components/terminal';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function App() {
   const [code, setCode] = useState(`main(){\n  #Welcome To Celerity Compiler!\n} \n`);
@@ -18,7 +18,7 @@ function App() {
   const [semanticInfo, setSemanticInfo] = useState(null);
   const [activeAnalysis, setActiveAnalysis] = useState(null);
   const [tacCode, setTacCode]           = useState(null);
-  const [programEvents, setProgramEvents] = useState([]);  // event list for Terminal
+  const [programEvents, setProgramEvents] = useState([]);
 
   const handleTabSwitch = (tabName) => setActiveAnalysis(tabName);
 
