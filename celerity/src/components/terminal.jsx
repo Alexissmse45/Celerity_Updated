@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Terminal = ({
   output, errors, activeTab, setActiveTab,
   tacCode,
@@ -58,7 +60,7 @@ const Terminal = ({
     const ordered    = [...inputPrompts].sort((a, b) => a.inputIndex - b.inputIndex);
     const userInputs = ordered.map(p => (inputValues[p.inputIndex] ?? '').trim());
     try {
-      const res  = await fetch('http://localhost:5000/run', {
+      const res  = await fetch(`${API_URL}/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code: sourceCode, userInputs })
@@ -100,7 +102,6 @@ const Terminal = ({
 
   const renderRow = (row, i) => {
     if (row.type === 'output') {
-      // Split on \n so out("\n") creates an actual new line
       const lines = row.text.split('\\n');
       return (
         <div key={i}>
